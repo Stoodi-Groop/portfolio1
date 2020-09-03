@@ -59,7 +59,7 @@ If you're not in a project in Rstudio, make sure to set your working directory h
 If you created an RStudio project, then your working directory (the directory with your data and code for these assignments) is the project directory.
 
 ```{r}
-pacman::p_load(tidyverse,janitor)
+pacman::p_load(tidyverse)
 ```
 
 Load the three data sets, after downloading them from dropbox and saving them in your working directory:
@@ -68,7 +68,9 @@ Load the three data sets, after downloading them from dropbox and saving them in
 * Word data: https://www.dropbox.com/s/8ng1civpl2aux58/token_train.csv?dl=0
 
 ```{r}
-
+demo_train <- read.csv("demo_train.csv")
+lu_train <- read.csv('LU_train.csv')
+token_train <- read.csv("token_train.csv")
 ```
 
 Explore the 3 datasets (e.g. visualize them, summarize them, etc.). You will see that the data is messy, since the psychologist collected the demographic data, the linguist analyzed the length of utterance in May 2014 and the fumbling jack-of-all-trades analyzed the words several months later. 
@@ -76,6 +78,14 @@ In particular:
 - the same variables might have different names (e.g. participant and visit identifiers)
 - the same variables might report the values in different ways (e.g. participant and visit IDs)
 Welcome to real world of messy data :-)
+
+```{r}
+names(demo_train)
+names(lu_train)
+names(token_train)
+
+```
+
 
 Before being able to combine the data sets we need to make sure the relevant variables have the same names and the same kind of values.
 
@@ -88,6 +98,15 @@ Tip: look through the chapter on data transformation in R for data science (http
 
 
 ```{r}
+#Renaming the Subject coloumns
+colnames(demo_train)[colnames(demo_train)=="Child.ID"] <- "ID"
+colnames(lu_train)[colnames(lu_train)=="SUBJ"] <- "ID"
+colnames(token_train)[colnames(token_train)=="SUBJ"] <- "ID"
+
+#Renaming the visit coloumn
+colnames(demo_train)[colnames(demo_train)=="Visit"] <- "VISIT"
+
+
 
 ```
 
@@ -97,8 +116,12 @@ Tip: The stringr package is what you need. str_extract () will allow you to extr
 
 
 ```{r}
+library(stringr)
 
+#removing letters from the visit coloumn
 
+lu_train$VISIT <-  str_extract(lu_train$VISIT,"\\d")
+token_train$VISIT <- str_extract(token_train$VISIT,"\\d")
 ```
 
 2c. We also need to make a small adjustment to the content of the Child.ID coloumn in the demographic data. Within this column, names that are not abbreviations do not end with "." (i.e. Adam), which is the case in the other two data sets (i.e. Adam.). If The content of the two variables isn't identical the rows will not be merged.
@@ -109,6 +132,10 @@ Tip: You can either have one line of code for each child name that is to be chan
 
 
 ```{r}
+#removing punctuations from ID coloumn
+demo_train$ID <- str_replace_all(demo_train$ID, "[[:punct:]]", "")
+lu_train$ID <- str_replace_all(lu_train$ID, "[[:punct:]]", "")
+token_train$ID <- str_replace_all(token_train$ID, "[[:punct:]]", "")
 
 ```
 
@@ -145,7 +172,12 @@ Most variables should make sense, here the less intuitive ones.
 Feel free to rename the variables into something you can remember (i.e. nonVerbalIQ, verbalIQ)
 
 ```{r}
+?select
 
+#Choosing the relevant coloumns
+sub_demo <- select(demo_train, ID, VISIT, Diagnosis, Ethnicity, Gender, Age, ADOS, MullenRaw, ExpressiveLangRaw, Socialization)
+sub_token<- select(token_train, ID, VISIT, types_MOT, types_CHI, tokens_MOT, tokens_CHI)
+sub_lu <- select(lu_train, ID, VISIT, MOT_MLU, CHI_MLU)
 ```
 
 2e. Finally we are ready to merge all the data sets into just one. 
@@ -155,7 +187,11 @@ Some things to pay attention to:
 * make sure to understand whether (and if so why) there are NAs in the dataset (e.g. some measures were not taken at all visits, some recordings were lost or permission to use was withdrawn)
 
 ```{r}
+#Merging the dataframes. 
+df <- merge(sub_token, sub_demo)
+df <- merge(df, sub_lu)
 
+?merge
 
 ```
 
@@ -171,6 +207,26 @@ A possible way to do so:
 
 
 ```{r}
+#visit1 <- filter(df, VISIT==1)
+#visit1 <- data.frame(visit1$ID, visit1$ADOS, visit1$MullenRaw, visit1$ExpressiveLangRaw, visit1$Socialization)
+
+
+#creating dataframe for visit 1 with relevant coloumns
+visit1 <- subset(df, VISIT == 1, select = c(ID, ADOS, MullenRaw, ExpressiveLangRaw, Socialization))
+
+#Changing coloumn names
+colnames(visit1)[colnames(visit1)=="ADOS"] <- "ADOS1"
+colnames(visit1)[colnames(visit1)=="MullenRaw"] <- "MullenRaw1"
+colnames(visit1)[colnames(visit1)=="ExpressiveLangRaw"] <- "ExpressiveLangRaw1"
+colnames(visit1)[colnames(visit1)=="Socialization"] <- "Socialization1"
+
+#Removing Visit coloumn
+df <- df %>% 
+  select(-VISIT)
+
+#Merge the two df's
+new_df <- merge(df, visit1)
+
 
 ```
 
@@ -182,6 +238,19 @@ Now we want to
 * Save the data set using into a csv file. Hint: look into write.csv()
 
 ```{r}
+#Anonymising the participants
+
+new_df$ID <- as.factor(new_df$ID)
+new_df$ID <- as.numeric(new_df$ID)
+new_df$ID <- as.factor(new_df$ID)
+
+#Changing the genders to F and M
+
+new_df <- new_df %>% 
+  mutate(Gender = ifelse(Gender == 1, "M", "F")) %>% 
+  mutate(Diagnosis = ifelse(Diagnosis== "A", "ASD", "TD"))
+
+write.csv(new_df, file = "portfolio1_data.csv")
 
 ```
 
