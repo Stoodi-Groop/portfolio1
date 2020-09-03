@@ -261,7 +261,7 @@ Here's the link to a very helpful book, which explains each function:
 http://r4ds.had.co.nz/index.html
 
 1) USING FILTER
-List all kids who:
+List all kids who: 
 1. have a mean length of utterance (across all visits) of more than 2.7 morphemes.
 2. have a mean length of utterance of less than 1.5 morphemes at the first visit
 3. have not completed all trials. Tip: Use pipes to solve this
