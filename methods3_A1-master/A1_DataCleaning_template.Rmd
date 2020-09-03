@@ -244,7 +244,7 @@ new_df$ID <- as.factor(new_df$ID)
 new_df$ID <- as.numeric(new_df$ID)
 new_df$ID <- as.factor(new_df$ID)
 
-#Changing the genders to F and M
+#Changing the genders to F and M and Diagnosis to ASD and TD
 
 new_df <- new_df %>% 
   mutate(Gender = ifelse(Gender == 1, "M", "F")) %>% 
@@ -267,7 +267,18 @@ List all kids who:
 3. have not completed all trials. Tip: Use pipes to solve this
 
 ```{r}
+# 1. MLU above 2.7
+MLU27 <- df %>% 
+  filter(CHI_MLU > 2.7)
 
+# 2. MLU below 1.5 at first visit
+MLU15 <- df %>% 
+  filter(VISIT == 1 & CHI_MLU < 1.5)
+
+# 3, not completed all trials 
+
+NAs <- df %>%
+  filter(is.na(ADOS)|is.na(MullenRaw)| is.na(ExpressiveLangRaw))
 
 ```
 
