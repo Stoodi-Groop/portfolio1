@@ -275,7 +275,7 @@ MLU27 <- df %>%
 MLU15 <- df %>% 
   filter(VISIT == 1 & CHI_MLU < 1.5)
 
-# 3, not completed all trials 
+# 3. not completed all trials 
 
 NAs <- df %>%
   filter(is.na(ADOS)|is.na(MullenRaw)| is.na(ExpressiveLangRaw))
@@ -290,7 +290,7 @@ USING ARRANGE
 
 ```{r}
 
-
+#
 ```
 
 USING SELECT
