@@ -91,11 +91,15 @@ Tip: look through the chapter on data transformation in R for data science (http
 
 ```{r}
 #renaming coloumns that are spelled differently
-colnames(demo_train)[colnames(demo_train)=="Child.ID"] <- "ID"
-colnames(lu_train)[colnames(lu_train)=="SUBJ"] <- "ID"
-colnames(token_train)[colnames(token_train)=="SUBJ"] <- "ID"
+demo_train <- demo_train %>% 
+  rename(ID = Child.ID) %>% 
+  rename(VISIT = Visit)
 
-colnames(demo_train)[colnames(demo_train)=="Visit"] <- "VISIT"
+lu_train <- lu_train %>% 
+  rename(ID = SUBJ)
+
+token_train <- token_train %>% 
+  rename(ID = SUBJ)
 ```
 
 2b. Find a way to homogeneize the way "visit" is reported (visit1 vs. 1).
@@ -191,16 +195,20 @@ A possible way to do so:
 ```{r}
 #creating a dataframe with the desired values from visit 1
 visit1 <- subset(df, VISIT == 1, select = c(ID, ADOS, MullenRaw, ExpressiveLangRaw, Socialization))
-colnames(visit1)[colnames(visit1)=="ADOS"] <- "ADOS1"
-colnames(visit1)[colnames(visit1)=="MullenRaw"] <- "MullenRaw1"
-colnames(visit1)[colnames(visit1)=="ExpressiveLangRaw"] <- "ExpressiveLangRaw1"
-colnames(visit1)[colnames(visit1)=="Socialization"] <- "Socialization1"
 
+#renaming the coloumns
+visit1 <- visit1 %>% 
+  rename(ADOS1 = ADOS) %>% 
+  rename(MullenRaw1 = MullenRaw) %>% 
+  rename(ExpressiveLangRaw1 = ExpressiveLangRaw) %>% 
+  rename(Socialization1 = Socialization)
+
+#removing the VISIT coloumn
 df <- df %>% 
   select(-VISIT)
 
+#merging the visit 1 values with th dataframe 
 new_df <- merge(visit1, df)
-
 
 ```
 
@@ -213,14 +221,15 @@ Now we want to
 
 ```{r}
 #anonymizing
-new_df$ID <- as.factor(new_df$ID)
-new_df$ID <- as.numeric(new_df$ID)  
-new_df$ID <- as.factor(new_df$ID)
+new_df$ID <- new_df$ID %>% 
+  as.factor() %>% 
+  as.numeric() %>% 
+  as.factor()
 
 #redoing values
 new_df <- new_df %>% 
   mutate(Gender = ifelse(Gender == 1, "M", "F")) %>% #determined by looking at the name Adam and his gender 
-  mutate(Diagnosis = ifelse(Diagnosis == "A", "ASD", "TD"))
+  mutate(Diagnosis = ifelse(Diagnosis == "A", "ASD", "TD")) #determined by Byurakn's description
 
 #saving the data
 write.csv(new_df, file = "portfolio1_data.csv")
@@ -239,7 +248,6 @@ List all kids who:
 3. have not completed all trials. Tip: Use pipes to solve this
 
 ```{r}
-
 
 ```
 
