@@ -247,7 +247,9 @@ new_df$ID <- as.factor(new_df$ID)
 #Changing the genders to F and M and Diagnosis to ASD and TD
 
 new_df <- new_df %>% 
-  mutate(Gender = ifelse(Gender == 1, "M", "F")) %>% 
+  mutate(Gender = ifelse(Gender == 1, "M", "F"))
+
+new_df <- new_df %>% 
   mutate(Diagnosis = ifelse(Diagnosis== "A", "ASD", "TD"))
 
 write.csv(new_df, file = "portfolio1_data.csv")
@@ -291,7 +293,17 @@ USING ARRANGE
 
 ```{r}
 
-#
+#1 The kid who produced the most words on the 6th visit 
+
+arrange(df, desc(tokens_CHI))
+# Answer: The kid who produced the most words on the 6th visit was TC, with 1294 words produced. 
+
+# 2: the kid who produced the least words on the 1st visit
+
+arrange(df, tokens_CHI)
+
+# Answer: bother Ryder and Tina produced zero words in the first visit. 
+
 ```
 
 USING SELECT
@@ -301,15 +313,41 @@ USING SELECT
 
 ```{r}
 
+# 1 - subset with only ASD, mlu and word tokens 
+
+new_df$Diagnosis <- as.factor(new_df$Diagnosis)
+
+filter(new_df, Diagnosis == "ASD") %>% 
+  select(Diagnosis, CHI_MLU, tokens_CHI )
+
+
+# 2 
+select(df, ID, ID, Age, ID, Age, tokens_CHI )
+# It just chooses the variable 1 time. 
+
+?select
 ```
 
 
 USING MUTATE, SUMMARISE and PIPES
 1. Add a column to the data set that represents the mean number of words spoken during all visits.
-2. Use the summarise function and pipes to add an column in the data set containing the mean amount of words produced by each trial across all visits. HINT: group by Child.ID 
+2. Use the summarise function and pipes to add a column in the data set containing the mean amount of words produced by each trial across all visits. HINT: group by Child.ID 
 3. The solution to task above enables us to assess the average amount of words produced by each child. Why don't we just use these average values to describe the language production of the children? What is the advantage of keeping all the data?
 
 ```{r}
+# 1 Adding coloumn with mean number of words spoken during all visits 
+
+df <- mutate(df, mean = mean(tokens_MOT + tokens_CHI) )
 
 
+mutate
+
+# 2
+
+ new_hej <- df %>% group_by (ID) %>% mutate(mean_new = summarise(mean(tokens_CHI)))
+ 
+
+
+
+?mutate
 ```
