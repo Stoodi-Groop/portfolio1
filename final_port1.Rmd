@@ -1,6 +1,6 @@
 ---
 title: "Assignment 1 - Data Cleaning - Instructions"
-author: "[FILL IN YOUR NAME]"
+author: "This is a submission for Anna, Andrea, Helle, Maria and Mia."
 date: "[FILL IN THE DATE]"
 output: html_document
 ---
